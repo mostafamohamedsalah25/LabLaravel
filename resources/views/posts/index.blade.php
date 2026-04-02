@@ -1,28 +1,58 @@
 <x-app-layout title="All Posts">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-3xl font-bold">All Posts</h1>
-        <a href="{{ route('posts.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700">Create New</a>
+        <a href="{{ route('posts.create') }}"
+            class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700">Create New</a>
     </div>
-    
+
     <div class="bg-white rounded shadow-sm border border-gray-100 overflow-hidden">
         <table class="w-full text-left border-collapse">
             <thead>
                 <tr class="bg-gray-200 border-b">
                     <th class="p-4 font-semibold">ID</th>
                     <th class="p-4 font-semibold">Title</th>
+                    <th class="p-4 font-semibold text-center">Author</th>
+                    <th class="p-4 font-semibold text-center">Created At</th>
                     <th class="p-4 font-semibold text-center">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($posts as $post)
                     <tr class="border-b hover:bg-gray-50">
-                        <td class="p-4">{{ $post['id'] }}</td>
-                        <td class="p-4 font-bold">{{ $post['title'] }}</td>
+                        <td class="p-4">{{ $post->id }}</td>
+                        <td class="p-4 font-bold">{{ $post->title }}</td>
+                        <td class="p-4">{{ $post->user->name ?? 'Unknown' }}</td>
+                        <td class="p-4">{{ $post->created_at->format('F j, Y, g:i a') }}</td>
                         <td class="p-4 flex gap-4 justify-center items-center">
-                            <a href="{{ route('posts.show', $post['id']) }}" class="text-blue-500 hover:text-blue-700 underline">Show</a>
-                            <a href="{{ route('posts.edit', $post['id']) }}" class="text-yellow-500 hover:text-yellow-700 underline">Edit</a>
-                            
-                            <button type="button" onclick="document.getElementById('delete-modal-{{ $post['id'] }}').classList.remove('hidden')" class="text-red-500 hover:text-red-700 underline bg-transparent border-0 cursor-pointer">
+                            @if ($post->trashed())
+                                <form action="{{ route('posts.restore', $post->id) }}" method="POST" class="m-0">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit"
+                                        class="text-green-600 hover:text-green-800 font-bold underline bg-transparent border-0 cursor-pointer">
+                                        Restore
+                                    </button>
+                                </form>
+                            @else
+                                <a href="{{ route('posts.show', $post->id) }}"
+                                    class="text-blue-500 hover:text-blue-700 underline">Show</a>
+                                <a href="{{ route('posts.edit', $post->id) }}"
+                                    class="text-yellow-500 hover:text-yellow-700 underline">Edit</a>
+                                {{-- <a href="{{ route('posts.show', $post['id']) }}"
+                                    class="text-blue-500 hover:text-blue-700 underline">Show</a>
+                                <a href="{{ route('posts.edit', $post['id']) }}"
+                                    class="text-yellow-500 hover:text-yellow-700 underline">Edit</a> --}}
+
+                                <form action="{{ route('posts.destroy', $post->id) }}" method="POST"
+                                    onsubmit="return confirm('Delete this post?');" class="m-0">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                        class="text-red-500 hover:text-red-700 underline bg-transparent border-0 cursor-pointer">Delete</button>
+                                </form>
+                            @endif
+
+                            {{-- <button type="button" onclick="document.getElementById('delete-modal-{{ $post['id'] }}').classList.remove('hidden')" class="text-red-500 hover:text-red-700 underline bg-transparent border-0 cursor-pointer">
                                 Delete
                             </button>
 
@@ -53,11 +83,14 @@
                                     </div>
 
                                 </div>
-                            </div>
-                            </td>
+                            </div> --}}
+                        </td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
+    </div>
+    <div class="mt-4">
+        {{ $posts->links() }}
     </div>
 </x-app-layout>

@@ -4,24 +4,20 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Post;
+use App\Models\User;
+use App\Http\Requests\StorePostRequest;
+use App\Http\Requests\UpdatePostRequest;
 
 class PostController extends Controller
 {
-    private function getPosts()
-    {
-        return [
-            1 => ['id' => 1, 'title' => 'First Post', 'body' => 'This is the content of the first post.'],
-            2 => ['id' => 2, 'title' => 'Second Post', 'body' => 'This is the content of the second post.'],
-            3 => ['id' => 3, 'title' => 'Third Post', 'body' => 'This is the content of the third post.']
-        ];
-    }
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
         // $posts = $this->getPosts();
-        $posts = Post::all();
+        // $posts = Post::all();
+        $posts = Post::withTrashed()->paginate(10);
 
 
         return view('posts.index', compact('posts'));
@@ -32,26 +28,24 @@ class PostController extends Controller
      */
     public function create()
     {
-        //
-        return view('posts.create');
+        $users = User::all();
+        return view('posts.create', compact('users'));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StorePostRequest $request)
     {
         // validate the request data
-        $request->validate([
-            'title' => 'required|max:255',
-            'body' => 'required',
-        ]);
+        
 
         // create a new post instance and save it to the database
-        $post = new Post();
-        $post->title = $request->title;
-        $post->body = $request->body;
-        $post->save();
+        // $post = new Post();
+        // $post->title = $request->title;
+        // $post->body = $request->body;
+        // $post->save();
+        Post::create($request->validated());
 
         return redirect()->route('posts.index');
     }
@@ -68,7 +62,8 @@ class PostController extends Controller
         //     'title' => 'Post Not Found',
         //     'body' => 'This post was not found in the static array.'
         // ];
-        $post = Post::find($id);
+        // $post = Post::find($id);
+        $post = Post::findOrFail($id);
 
 
         return view('posts.show', compact('post'));
@@ -86,20 +81,26 @@ class PostController extends Controller
         //     'title' => 'Post Not Found',
         //     'body' => 'This post was not found in the static array.'
         // ];
-        $post = Post::find($id);
+        // $post = Post::find($id);
+        $post = Post::findOrFail($id);
+        $users = User::all();
 
-        return view('posts.edit', compact('post'));
+
+        return view('posts.edit', compact('post', 'users'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id)
+    public function update(UpdatePostRequest $request, $id)
     {
-        $post = Post::find($id);
-        $post->title = $request->input('title');
-        $post->body = $request->input('body');
-        $post->save();
+        // $post = Post::find($id);
+        // $post->title = $request->input('title');
+        // $post->body = $request->input('body');
+        // $post->save();
+
+        $post = Post::findOrFail($id);
+        $post->update($request->validated());
 
 
         return redirect()->route('posts.index');
@@ -110,8 +111,19 @@ class PostController extends Controller
      */
     public function destroy(string $id)
     {
-        
+        // $post = Post::find($id);
+        // $post->delete();
+        $post = Post::findOrFail($id);
+        $post->delete();
 
+        return redirect()->route('posts.index');
+    }
+
+    
+    public function restore(string $id)
+    {
+        $post = Post::withTrashed()->findOrFail($id);
+        $post->restore();
         return redirect()->route('posts.index');
     }
 }
