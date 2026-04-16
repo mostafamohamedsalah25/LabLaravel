@@ -39,6 +39,7 @@ const restorePost = (id) => {
                             <tr class="bg-gray-200 dark:bg-gray-700 border-b dark:border-gray-600">
                                 <th class="p-4 font-semibold">ID</th>
                                 <th class="p-4 font-semibold">Title</th>
+                                <th class="p-4 font-semibold text-center">Slug</th>
                                 <th class="p-4 font-semibold text-center">Author</th>
                                 <th class="p-4 font-semibold text-center">Created At</th>
                                 <th class="p-4 font-semibold text-center">Actions</th>
@@ -53,6 +54,7 @@ const restorePost = (id) => {
                                         {{ post.title }}
                                     </div>
                                 </td>
+                                <td class="p-4 text-center text-sm text-gray-500 italic">{{ post.slug || 'N/A' }}</td>
                                 <td class="p-4 text-center">{{ post.user?.name || 'Unknown' }}</td>
                                 <td class="p-4 text-center">{{ new Date(post.created_at).toLocaleDateString() }}</td>
 
