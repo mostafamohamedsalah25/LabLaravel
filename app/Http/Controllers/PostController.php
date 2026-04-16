@@ -9,6 +9,7 @@ use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Gate;
 
 class PostController extends Controller
 {
@@ -18,8 +19,6 @@ class PostController extends Controller
     public function index()
     {
         $posts = Post::with('user')->withTrashed()->paginate(10);
-        // $posts = Post::all( withTrashed()->paginate(10);
-        // return view('posts.index', compact('posts'));
         return Inertia::render('Posts/Index', [
             'posts' => $posts
         ]);
@@ -30,11 +29,11 @@ class PostController extends Controller
      */
     public function create()
     {
-        $users = User::all();
-        // return view('posts.create', compact('users'));
-        return Inertia::render('Posts/Create', [
-            'users' => $users
-        ]);
+        // $users = User::all();
+        // return Inertia::render('Posts/Create', [
+        //     'users' => $users
+        // ]);
+        return Inertia::render('Posts/Create');
     }
 
     /**
@@ -44,10 +43,13 @@ class PostController extends Controller
     {
         $validatedData = $request->validated();
 
-        if($request->hasFile('image')) {
-            $path = $request->file('image')->store('posts', 'public');
-            $validatedData['image_path'] = $path;
-        }
+        $validatedData['user_id'] = auth()->id();
+
+        $this->handleImageUpload($request, $validatedData);
+        // if($request->hasFile('image')) {
+        //     $path = $request->file('image')->store('posts', 'public');
+        //     $validatedData['image_path'] = $path;
+        // }
         Post::create($validatedData);
 
         return redirect()->route('posts.index');
@@ -58,11 +60,8 @@ class PostController extends Controller
      */
     public function show($id)
     {
-        // $post = Post::findOrFail($id);
         $post = Post::with(['user', 'comments.user'])->findOrFail($id);
         $users = User::all();
-
-        // return view('posts.show', compact('post', 'users'));
         return Inertia::render('Posts/Show', [
             'post' => $post,
             'users' => $users
@@ -75,13 +74,12 @@ class PostController extends Controller
     public function edit($id)
     {
         $post = Post::findOrFail($id);
-        $users = User::all();
+        Gate::authorize('update', $post);
+        // $users = User::all();
 
-
-        // return view('posts.edit', compact('post', 'users'));
         return Inertia::render('Posts/Edit', [
             'post' => $post,
-            'users' => $users
+            // 'users' => $users
         ]);
     }
 
@@ -91,20 +89,18 @@ class PostController extends Controller
     public function update(UpdatePostRequest $request, $id)
     {
         $post = Post::findOrFail($id);
-        // $post->update($request->validated());
+        Gate::authorize('update', $post);
         $validatedData = $request->validated();
 
-        if($request->hasFile('image')) {
-            // Delete old image if exists
-            if ($post->image_path) {
-                Storage::disk('public')->delete($post->image_path);
-            }
-            $path = $request->file('image')->store('posts', 'public');
-            $validatedData['image_path'] = $path;
-        }
+        $this->handleImageUpload($request, $validatedData, $post->image_path);
+        // if($request->hasFile('image')) {
+        //     if ($post->image_path) {
+        //         Storage::disk('public')->delete($post->image_path);
+        //     }
+        //     $path = $request->file('image')->store('posts', 'public');
+        //     $validatedData['image_path'] = $path;
+        // }
         $post->update($validatedData);
-
-
 
         return redirect()->route('posts.index');
     }
@@ -115,9 +111,10 @@ class PostController extends Controller
     public function destroy(string $id)
     {
         $post = Post::find($id);
-        if ($post->image_path) {
-            Storage::disk('public')->delete($post->image_path);
-        }
+        Gate::authorize('delete', $post);
+        // if ($post->image_path) {
+        //     Storage::disk('public')->delete($post->image_path);
+        // }
         $post->delete();
 
         return redirect()->route('posts.index');
@@ -127,7 +124,21 @@ class PostController extends Controller
     public function restore(string $id)
     {
         $post = Post::withTrashed()->findOrFail($id);
+        Gate::authorize('restore', $post);
         $post->restore();
         return redirect()->route('posts.index');
     }
+
+    private function handleImageUpload($request, array &$validatedData, $existingImagePath = null)
+    {
+        if ($request->hasFile('image')) {
+            if ($existingImagePath) {
+                disk('public')->delete($existingImagePath);
+            }
+
+            $validatedData['image_path'] = $request->file('image')->store('posts', 'public');
+        }
+    }
+
 }
+

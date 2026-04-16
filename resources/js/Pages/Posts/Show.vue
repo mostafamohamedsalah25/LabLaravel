@@ -4,18 +4,18 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
 const props = defineProps({
     post: Object,
-    users: Array
+    // users: Array
 });
 
 const commentForm = useForm({
     body: '',
-    user_id: '',
+    // user_id: '',
 });
 
 const submitComment = () => {
     commentForm.post(route('comments.store', props.post.id), {
         preserveScroll: true,
-        onSuccess: () => commentForm.reset('body'), 
+        onSuccess: () => commentForm.reset('body'),
     });
 };
 </script>
@@ -62,13 +62,13 @@ const submitComment = () => {
                     <form @submit.prevent="submitComment" class="bg-white dark:bg-gray-800 p-4 rounded border dark:border-gray-700">
                         <h4 class="font-bold text-gray-900 dark:text-gray-100 mb-3">Add a Comment</h4>
 
-                        <div class="mb-3">
+                        <!-- <div class="mb-3">
                             <select v-model="commentForm.user_id" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 mb-2">
                                 <option value="">Post as...</option>
                                 <option v-for="user in users" :key="user.id" :value="user.id">{{ user.name }}</option>
                             </select>
                             <div v-if="commentForm.errors.user_id" class="text-red-500 text-sm">{{ commentForm.errors.user_id }}</div>
-                        </div>
+                        </div> -->
 
                         <div class="mb-3">
                             <textarea v-model="commentForm.body" rows="2" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300" placeholder="Your comment..."></textarea>

@@ -4,14 +4,14 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
 const props = defineProps({
     post: Object,
-    users: Array
+    // users: Array
 });
 
 const form = useForm({
     _method: 'put',
     title: props.post.title,
     body: props.post.body,
-    user_id: props.post.user_id,
+    // user_id: props.post.user_id,
     image: null,
 });
 
@@ -46,13 +46,13 @@ const submit = () => {
                             <div v-if="form.errors.image" class="text-red-500 text-sm mt-1">{{ form.errors.image }}</div>
                         </div>
 
-                        <div>
+                        <!-- <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Author</label>
                             <select v-model="form.user_id" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
                                 <option v-for="user in users" :key="user.id" :value="user.id">{{ user.name }}</option>
                             </select>
                             <div v-if="form.errors.user_id" class="text-red-500 text-sm mt-1">{{ form.errors.user_id }}</div>
-                        </div>
+                        </div> -->
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Body</label>

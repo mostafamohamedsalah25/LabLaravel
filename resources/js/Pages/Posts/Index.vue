@@ -56,7 +56,7 @@ const restorePost = (id) => {
                                 <td class="p-4 text-center">{{ post.user?.name || 'Unknown' }}</td>
                                 <td class="p-4 text-center">{{ new Date(post.created_at).toLocaleDateString() }}</td>
 
-                                <td class="p-4 flex gap-4 justify-center items-center">
+                                <!-- <td class="p-4 flex gap-4 justify-center items-center">
                                     <template v-if="post.deleted_at">
                                         <button @click="restorePost(post.id)" class="text-green-600 hover:text-green-800 font-bold underline">Restore</button>
                                     </template>
@@ -64,6 +64,19 @@ const restorePost = (id) => {
                                         <Link :href="route('posts.show', post.id)" class="text-blue-500 hover:underline">Show</Link>
                                         <Link :href="route('posts.edit', post.id)" class="text-yellow-500 hover:underline">Edit</Link>
                                         <button @click="deletePost(post.id)" class="text-red-500 hover:underline">Delete</button>
+                                    </template>
+                                </td> -->
+                                <td class="p-4 flex gap-4 justify-center items-center">
+                                    <Link :href="route('posts.show', post.id)" class="text-blue-500 hover:underline">Show</Link>
+
+                                    <template v-if="post.user_id === $page.props.auth.user.id">
+                                        <template v-if="post.deleted_at">
+                                            <button @click="restorePost(post.id)" class="text-green-600 hover:text-green-800 font-bold underline">Restore</button>
+                                        </template>
+                                        <template v-else>
+                                            <Link :href="route('posts.edit', post.id)" class="text-yellow-500 hover:underline">Edit</Link>
+                                            <button @click="deletePost(post.id)" class="text-red-500 hover:underline">Delete</button>
+                                        </template>
                                     </template>
                                 </td>
                             </tr>
